@@ -9,13 +9,10 @@
 * If you want to assign someone to a card, convert the card to an issue.
 * To ensure that the board carries out automated actions make sure you associate pull requests with issues.
 
-# Paper being reproduced
-https://www.aclweb.org/anthology/N16-1138/
-
-# Report Link
-https://www.overleaf.com/read/ntwnpkpxmxvw
-
-# Useful Links
-https://www.nltk.org/
-https://scikit-learn.org/
-https://docs.python.org/3/library/pickle.html
+## Useful Links
+* [Paper being reproduced](https://www.aclweb.org/anthology/N16-1138/)
+* [Paper repo](https://github.com/willferreira/mscproject)
+* [Report Link](https://www.overleaf.com/read/ntwnpkpxmxvw)
+* [NLTK](https://www.nltk.org/)
+* [SciKit](https://scikit-learn.org/)
+* [Pickle](https://docs.python.org/3/library/pickle.html)
