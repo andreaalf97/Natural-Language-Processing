@@ -2,7 +2,7 @@
 
 * Andrea Alfieri - 5128315
 * Diego Albo - 5043204
-* Tomasz Motyka
+* Tomasz Motyka - 5146844
 * Avinash Saravanan - 4993381
 
 # Board Management
