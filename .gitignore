@@ -1,3 +1,4 @@
 data
 venv_ir
 .idea
+__pycache__
