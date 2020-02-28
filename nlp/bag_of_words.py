@@ -30,10 +30,10 @@ def bow(headline: str, wnl: WordNetLemmatizer) -> Counter:
 
 
 def create_corpus(df: pd.DataFrame) -> Counter:
+    """Creates the corpus of all the words while summing the counters"""
     c = Counter()
     wnl = WordNetLemmatizer()
     i = 0
-    "Creates the corpus of all the words while summing the counters"
     for headline in df.articleHeadline:
         _c = bow(headline, wnl)
         c += _c
@@ -43,16 +43,16 @@ def create_corpus(df: pd.DataFrame) -> Counter:
     return c
 
 
-def vectorize(tokens, indexes: dict):
-    "Convert the tokens to frequency vectors"
+def vectorize(tokens, indexes: dict) -> np.array:
+    """Convert the tokens to frequency vectors"""
     vec = np.zeros(len(indexes))
     for t in tokens:
         vec[indexes[t]] += 1
     return vec
 
 
-def create_vectors(df: pd.DataFrame, indexes) -> pd.DataFrame:
-    "Create a dataframe with the BoW representations of the headers"
+def create_vectors(df: pd.DataFrame, indexes: dict) -> pd.DataFrame:
+    """Create a dataframe with the BoW representations of the headers"""
     features = pd.DataFrame(columns=range(len(indexes)))
     wnl = WordNetLemmatizer()
     i = 0
