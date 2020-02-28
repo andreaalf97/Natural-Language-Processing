@@ -1,4 +1,8 @@
-data
+data/*.xml
+data/*-test*
+data/*.zip
+data/*fold*
+data/*clean-train*
 venv_ir
 .idea
 __pycache__
