@@ -54,13 +54,15 @@ nlp = stanfordnlp.Pipeline()
 
 
 def extract_root_dist(data):
-    # data['refute_dist'] = data['articleHeadline'].apply(extract_single_root_dist, words=_refuting_words)
+    data['refute_dist'] = data['articleHeadline'].apply(extract_single_root_dist, words=_refuting_words)
     data['hedge_dist'] = data['articleHeadline'].apply(extract_single_root_dist, words=_hedging_words)
     return data
 
 
 def extract_single_root_dist(entry, words):
     doc = nlp(entry)
+    # Currently not sure what should we put as feature value if there is no refuting/heding word in a sentence.
+    # That's why is some large number right now
     min_dist = 100000
     for sentence in doc.sentences:
         graph, root = create_dependency_graph(sentence)
@@ -70,6 +72,8 @@ def extract_single_root_dist(entry, words):
     return min_dist
 
 
+# Dependency graph is a graph (tree) with words as nodes and if
+# word A is dependent on word B in a sentence, then there is an edge from B to A
 def create_dependency_graph(sentence):
     edges = []
     root = ''

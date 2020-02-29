@@ -13,5 +13,3 @@ def add_bag_of_words_features(data):
 
 def add_root_dist_feature(data):
     return root_dist_extractor.extract_root_dist(data)
-
-
