@@ -1,11 +1,15 @@
 import Model
-from feature_extraction.headline_features import bag_of_words
+import pandas as pd
+from feature_extraction.headline_features import bag_of_words, root_dist_extractor
 
 
 def extract_features(data):
-    model = Model()
-    add_bag_of_words_features(model, data)
+    data = add_root_dist_feature(data)
 
 
-def add_bag_of_words_features(model, entry):
-    model.features.extend(bag_of_words.calculate_common_words_features(entry))
+def add_bag_of_words_features(data):
+    return None
+
+
+def add_root_dist_feature(data):
+    return root_dist_extractor.extract_root_dist(data)
