@@ -14,8 +14,6 @@ from scipy.sparse import coo_matrix, vstack
 from functools import lru_cache
 from collections import Counter
 
-import utils
-
 
 @lru_cache(maxsize=50)
 def bow(headline: str, wnl: WordNetLemmatizer) -> Counter:
