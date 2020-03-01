@@ -3,12 +3,18 @@ from data_reading.preprocess_data import apply_lower_case, remove_punctuation, \
     apply_lemmatization, apply_stemming, apply_strip
 import os
 
-PICKLED_FEATURES_PATH = os.path.dirname(__file__)+"/../data/pickled_features/"
+PICKLED_FEATURES_PATH = os.path.dirname(__file__) + "/../data/pickled_features/"
+
 
 def read_clean_dataset():
     """Returns the dataset as provided by the author"""
-    dataset = pd.read_csv(os.path.dirname(__file__)+"/../data/url-versions-2015-06-14-clean.csv")
+    dataset = pd.read_csv(os.path.dirname(__file__) + "/../data/url-versions-2015-06-14-clean.csv")
     return dataset
+
+
+def read_ppdb_data():
+    """Returns the necessary data for indexing possible paraphrases"""
+    pass
 
 
 if __name__ == '__main__':

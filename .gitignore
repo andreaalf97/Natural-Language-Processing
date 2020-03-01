@@ -7,3 +7,5 @@ data/*~
 venv_ir
 .idea
 __pycache__
+stanford-parser
+jars
