@@ -1,9 +1,15 @@
+"""Computes the distance from hedging/refuting word to the root of the sentence
+for all the headlines in the dataset"""
+
 import stanfordnlp
 #stanfordnlp.download('en')
 import networkx as nx
 
+from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH
+from data_reading.preprocess_data import apply_lower_case, remove_punctuation, apply_strip
 
-# List fo words taken from github repo of the paper
+
+# List of words taken from github repo of the paper
 _refuting_seed_words = [
                         'fake',
                         'fraud',
@@ -60,6 +66,7 @@ def extract_root_dist(data):
 
 
 def extract_single_root_dist(entry, words):
+    '''Returns mininum distance from hedhing/refuting words to the root of the sentence for whole headline (headline can have multiple sentences).'''
     doc = nlp(entry)
     # Currently not sure what should we put as feature value if there is no refuting/heding word in a sentence.
     # That's why is some large number right now
@@ -75,6 +82,7 @@ def extract_single_root_dist(entry, words):
 # Dependency graph is a graph (tree) with words as nodes and if
 # word A is dependent on word B in a sentence, then there is an edge from B to A
 def create_dependency_graph(sentence):
+    '''Creates dependency graph for the sentence using StanfordNLP'''
     edges = []
     root = ''
     for token in sentence.dependencies:
@@ -84,3 +92,13 @@ def create_dependency_graph(sentence):
         else:
             root = token[2].text
     return nx.Graph(edges), root
+
+
+dataset = read_clean_dataset()  # Read the dataset
+dataset = apply_lower_case(dataset)
+dataset = apply_strip(dataset)
+
+dataset = extract_root_dist(dataset)
+
+a = dataset[['refute_dist', 'hedge_dist']]
+a.to_pickle(PICKLED_FEATURES_PATH+"root_dist.pkl")
