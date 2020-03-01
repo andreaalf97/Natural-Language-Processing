@@ -8,7 +8,7 @@ from scipy import spatial
 from functools import lru_cache, reduce
 import pandas as pd
 
-from read_data import read_clean_dataset, PICKLED_FEATURES_PATH
+from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH
 
 
 def normalize_sentences(claim: str, headline: str, wnl: WordNetLemmatizer) -> (str, str):

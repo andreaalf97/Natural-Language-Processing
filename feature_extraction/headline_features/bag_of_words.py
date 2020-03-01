@@ -7,7 +7,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 import pandas as pd
 import numpy as np
 
-from read_data import read_clean_dataset
+from data_reading.read_data import read_clean_dataset
 
 from functools import lru_cache
 from collections import Counter
@@ -77,5 +77,5 @@ print(counts)
 d = create_vectors(dataset, assignments) # dataframe with all the vectors
 
 
-pickle_path = "../data/pickled_features/bow.pickle"
+pickle_path = "../../data/pickled_features/bow.pkl"
 d.to_pickle(pickle_path) # pickle the dataframe to the specified folder
