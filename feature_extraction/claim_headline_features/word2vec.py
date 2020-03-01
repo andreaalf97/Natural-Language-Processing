@@ -7,6 +7,7 @@ import spacy
 from scipy import spatial
 from functools import lru_cache, reduce
 import pandas as pd
+import numpy as np
 
 from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH
 
@@ -40,6 +41,7 @@ def compute_similarity(claim, headline, nlp):
     # compute the average similarity
     avg_sim = claim_w2v.similarity(headline_w2v)
     # Calculate the vector as the product of word vectors
+    # Have to take logs since the product vanishes due to small numbers
     claim_prod_vector = reduce(lambda x, y: x * y, [nlp(t).vector for t in claim])
     headline_prod_vector = reduce(lambda x, y: x * y, [nlp(t).vector for t in headline])
     # calculate cosine similarity
@@ -61,6 +63,7 @@ def claim_to_headline_sim(d: pd.DataFrame, nlp) -> pd.DataFrame:
         if i % 50 == 0:
             print(f'[{i}] Sim between {claim} ||||| {headline} --> ({avg_sim}/{prod_sim})')
     # After computing all similarities, add a new column to the dataframe
+    d = pd.DataFrame()
     d['avg_similarity'] = avg_similarities
     d['prod_similarity'] = prod_similarities
     return d
@@ -79,4 +82,4 @@ nlp = spacy.load(VECTOR_DIR)
 print('Loaded vectors')
 similarity_df = claim_to_headline_sim(df, nlp)
 print('Saving features to', PICKLED_FEATURES_PATH)
-# similarity_df.to_pickle(PICKLED_FEATURES_PATH)
+similarity_df.to_pickle(PICKLED_FEATURES_PATH + "word2vec.pkl")
