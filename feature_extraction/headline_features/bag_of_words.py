@@ -7,10 +7,18 @@ from nltk.stem.wordnet import WordNetLemmatizer
 import pandas as pd
 import numpy as np
 
-from data_reading.read_data import read_clean_dataset
+from scipy import sparse
+
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.pipeline import Pipeline
+
+from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH
+from data_reading.preprocess_data import apply_lower_case, apply_lemmatization
 
 from functools import lru_cache
 from collections import Counter
+
+from typing import List
 
 
 @lru_cache(maxsize=50)
@@ -69,13 +77,43 @@ def create_vectors(df: pd.DataFrame, indexes: dict) -> pd.DataFrame:
     return features
 
 
-dataset = read_clean_dataset() # Read the dataset
+def create_bow(headlines: List, max_ngram_size=2, number_of_features=500, remove_stopwords=False,
+               apply_tfidf=True) -> (list, sparse.csr_matrix):
+    """Creates the bag of words representation using the specialized sklearn functionality
 
-counts = create_corpus(dataset) # Number of occurrences of each word in the corpus
-assignments = dict(zip(counts.keys(), range(len(counts)))) # Index of each of the words in the vector
-print(counts)
-d = create_vectors(dataset, assignments) # dataframe with all the vectors
+    Also by default apply TF-IDF correction to the returned dataset, however it can be turned off
+    in case we see that without TF-IDF shows better performance
+    """
+    sw = stopwords.words('english') if remove_stopwords else None
+    if apply_tfidf:
+        pipe = Pipeline([('count', CountVectorizer(ngram_range=(1, max_ngram_size), max_features=number_of_features,
+                                                   stop_words=sw)),
+                         ('tfidf', TfidfTransformer())])
+        _bow = pipe.fit_transform(headlines)
+        f = pipe['count'].get_feature_names()
+    else:
+        cv = CountVectorizer(ngram_range=(1, max_ngram_size), max_features=number_of_features, stop_words=sw)
+        _bow = cv.fit_transform(headlines)
+        f = cv.get_feature_names()
+    return f, _bow
 
 
-pickle_path = "../../data/pickled_features/bow.pkl"
-d.to_pickle(pickle_path) # pickle the dataframe to the specified folder
+# Lemmatize the dataset for better representation
+dataset = read_clean_dataset()  # Read the dataset
+dataset = apply_lower_case(dataset)
+dataset = apply_lemmatization(dataset)
+
+features, b = create_bow(dataset.articleHeadline.values)
+
+# create a dataset
+d = pd.DataFrame(b.toarray())
+d.columns = features
+
+# This is the old code to make use of the old bow representation with no optimizations or tf-idf
+# counts = create_corpus(dataset)  # Number of occurrences of each word in the corpus
+# assignments = dict(zip(counts.keys(), range(len(counts))))  # Index of each of the words in the vector
+# print(counts)
+# d = create_vectors(dataset, assignments)  # dataframe with all the vectors
+#
+
+d.to_pickle(PICKLED_FEATURES_PATH+"bow.pkl")  # pickle the dataframe to the specified folder
