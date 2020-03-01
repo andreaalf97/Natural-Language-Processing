@@ -1,15 +1,13 @@
 """Creates the bag of words representation of all the headlines in the dataset
 and whether they finish with a question mark"""
 
-import nltk
-from nltk.probability import FreqDist
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 import pandas as pd
 import numpy as np
 
-from scipy.sparse import coo_matrix, vstack
+from read_data import read_clean_dataset
 
 from functools import lru_cache
 from collections import Counter
@@ -71,10 +69,13 @@ def create_vectors(df: pd.DataFrame, indexes: dict) -> pd.DataFrame:
     return features
 
 
-dataset = utils.read_clean_dataset()
+dataset = read_clean_dataset() # Read the dataset
 
-# Iterate through the words and create the representation
-counts = create_corpus(dataset)
-assignments = dict(zip(counts.keys(), range(len(counts))))
+counts = create_corpus(dataset) # Number of occurrences of each word in the corpus
+assignments = dict(zip(counts.keys(), range(len(counts)))) # Index of each of the words in the vector
 print(counts)
-d = create_vectors(dataset, assignments)
+d = create_vectors(dataset, assignments) # dataframe with all the vectors
+
+
+pickle_path = "../data/pickled_features/bow.pickle"
+d.to_pickle(pickle_path) # pickle the dataframe to the specified folder
