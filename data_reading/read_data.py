@@ -5,19 +5,27 @@ import os
 import pickle
 from functools import lru_cache
 
-PICKLED_FEATURES_PATH = os.path.dirname(__file__)+"/../data/pickled_features/"
-PICKLED_PPDB = os.path.dirname(__file__)+"/../data/ppdb/"
+PICKLED_FEATURES_PATH = os.path.dirname(__file__) + "/../data/pickled_features/"
+PICKLED_PPDB = os.path.dirname(__file__) + "/../data/ppdb/"
 
 
 def read_clean_dataset():
     """Returns the dataset as provided by the author"""
-    dataset = pd.read_csv(os.path.dirname(__file__)+"/../data/url-versions-2015-06-14-clean.csv")
+    dataset = pd.read_csv(os.path.dirname(__file__) + "/../data/url-versions-2015-06-14-clean.csv")
     return dataset
 
 
 @lru_cache(maxsize=1000000)
 def read_ppdb_data():
     with open(os.path.join(PICKLED_PPDB, 'ppdb.pickle'), 'rb') as f:
+        return pickle.load(f)
+
+
+def read_pickle_file(filename: str) -> pd.DataFrame:
+    """Returns the components of a given pickle file"""
+    if '.pkl' not in filename:
+        filename += '.pkl'
+    with open(os.path.join(PICKLED_FEATURES_PATH, filename), 'rb') as f:
         return pickle.load(f)
 
 
