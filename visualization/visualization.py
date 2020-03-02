@@ -26,7 +26,7 @@ def bow_chart(bow, title="", items=5):
     plt.title(title)
     plt.show()
 
-
+#Plots a bar chart showing how the headlines are distributed by q value
 def plot_qData(qData, title=""):
     contains = 0
     ends = 0
