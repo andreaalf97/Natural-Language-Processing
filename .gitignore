@@ -9,3 +9,4 @@ venv_ir
 __pycache__
 stanford-parser
 jars
+svo_stanford*

@@ -21,6 +21,14 @@ def read_ppdb_data():
         return pickle.load(f)
 
 
+def read_pickle_file(filename: str) -> pd.DataFrame:
+    """Returns the components of a given pickle file"""
+    if '.pkl' not in filename:
+        filename += '.pkl'
+    with open(os.path.join(PICKLED_FEATURES_PATH, filename), 'rb') as f:
+        return pickle.load(f)
+
+
 if __name__ == '__main__':
     clean_data = read_clean_dataset()
 
