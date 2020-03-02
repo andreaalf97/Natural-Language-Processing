@@ -2,13 +2,23 @@ import pandas as pd
 from data_reading.preprocess_data import apply_lower_case, remove_punctuation, \
     apply_lemmatization, apply_stemming, apply_strip
 import os
+import pickle
+from functools import lru_cache
 
 PICKLED_FEATURES_PATH = os.path.dirname(__file__)+"/../data/pickled_features/"
+PICKLED_PPDB = os.path.dirname(__file__)+"/../data/ppdb/"
+
 
 def read_clean_dataset():
     """Returns the dataset as provided by the author"""
     dataset = pd.read_csv(os.path.dirname(__file__)+"/../data/url-versions-2015-06-14-clean.csv")
     return dataset
+
+
+@lru_cache(maxsize=1000000)
+def read_ppdb_data():
+    with open(os.path.join(PICKLED_PPDB, 'ppdb.pickle'), 'rb') as f:
+        return pickle.load(f)
 
 
 if __name__ == '__main__':
