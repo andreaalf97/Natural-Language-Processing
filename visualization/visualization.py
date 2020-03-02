@@ -17,7 +17,6 @@ def bow_chart(bow, title="", items=5):
     xpos = 0
     ticks = []
     for row in data.iterrows():
-        print(row[1])
         plt.bar(xpos, row[1])
         ticks.append(row[0])
         # Ensure enough spacing between bars
@@ -50,6 +49,15 @@ def plot_qData(qData, title=""):
     plt.title(title)
     plt.show()
 
+def root_dist_hist(data):
+    refute_dist = data["refute_dist"]
+    hedge_dist = data["hedge_dist"]
+    plt.hist(refute_dist)
+    plt.title("Refute Distance")
+    plt.show()
+    plt.hist(hedge_dist)
+    plt.title("Hedge Distance")
+    plt.show()
 
 # Main Visualization Logic
 data = pd.read_csv("../data/url-versions-2015-06-14-clean.csv")
@@ -69,3 +77,9 @@ bow_chart(total, "Lowest 5 Tokens")
 
 qData = pd.read_pickle("../data/pickled_features/q_features.pkl")
 plot_qData(qData, "Distribution of Headlines by Q")
+
+rootData = pd.read_pickle("../data/pickled_features/root_dist.pkl")
+rootData = rootData.replace(100000, 0)
+root_dist_hist(rootData)
+
+vecData = pd.read_pickle("../data/pickled_features/word2vec.pkl")
