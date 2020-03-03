@@ -13,7 +13,8 @@ def to_float(s):
 
 
 def process_ppdb_data():
-    with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb-2.0-l-lexical'), 'r') as f:
+    #with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb-2.0-l-lexical'), 'r') as f:
+    with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb-2.0-xl-all', 'ppdb-2.0-xl-all'), 'r') as f:
         ppdb = {}
         for line in f:
             data = line.split('|||')
@@ -31,5 +32,5 @@ def process_ppdb_data():
 if __name__ == '__main__':
     ppdb = process_ppdb_data()
 
-    with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb.pickle'),'wb') as f:
+    with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb_xl.pickle'),'wb') as f:
         pickle.dump(ppdb, f, pickle.HIGHEST_PROTOCOL)

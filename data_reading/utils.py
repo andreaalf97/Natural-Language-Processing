@@ -67,3 +67,11 @@ def numbers_to_words(entry):
         entry = entry.replace(n, " " + n2w.num2words(convertible) + " ", 1)
 
     return re.sub(r" +", " ", entry)
+
+
+def remove_urls(entry):
+    if 'http' not in entry:
+        return entry
+    else:
+        parts = entry.split('http')
+        return parts[0]
