@@ -69,17 +69,19 @@ def claim_to_headline_sim(d: pd.DataFrame, nlp) -> pd.DataFrame:
     return d
 
 
-# Vector directory in my computer
-VECTOR_DIR = "../../../wse/vec"
+if __name__ == '__main__':
+    # Vector directory in my computer
+    VECTOR_DIR = "../../../wse/vec"
 
-# Load the clean dataset
-df = read_clean_dataset()
+    # Load the clean dataset
+    df = read_clean_dataset()
 
-# Load the vectors (vectors are number 3 from https://fasttext.cc/docs/en/english-vectors.html)
-print('Loading vectors')
-nlp = spacy.load(VECTOR_DIR)
+    # Load the vectors (vectors are number 3 from https://fasttext.cc/docs/en/english-vectors.html)
+    print('Loading vectors')
+    nlp = spacy.load(VECTOR_DIR)
 
-print('Loaded vectors')
-similarity_df = claim_to_headline_sim(df, nlp)
-print('Saving features to', PICKLED_FEATURES_PATH)
-similarity_df.to_pickle(PICKLED_FEATURES_PATH + "word2vec.pkl")
+    print('Loaded vectors')
+    similarity_df = claim_to_headline_sim(df, nlp)
+
+    print('Saving features to', PICKLED_FEATURES_PATH)
+    similarity_df.to_pickle(PICKLED_FEATURES_PATH + "word2vec.pkl")
