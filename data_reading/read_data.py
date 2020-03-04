@@ -1,7 +1,7 @@
 import pandas as pd
 from data_reading.preprocess_data import apply_lower_case, remove_punctuation, \
     apply_lemmatization, apply_stemming, apply_strip
-from utils import remove_urls
+from data_reading.utils import remove_urls
 import os
 import pickle
 from functools import lru_cache
