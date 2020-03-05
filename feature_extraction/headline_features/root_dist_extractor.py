@@ -68,9 +68,7 @@ def extract_root_dist(data):
 def extract_single_root_dist(entry, words):
     '''Returns mininum distance from hedhing/refuting words to the root of the sentence for whole headline (headline can have multiple sentences).'''
     doc = nlp(entry)
-    # Currently not sure what should we put as feature value if there is no refuting/heding word in a sentence.
-    # That's why is some large number right now
-    min_dist = 100000
+    min_dist = 0
     for sentence in doc.sentences:
         graph, root = create_dependency_graph(sentence)
         for word in words:
