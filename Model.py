@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 
-from data_reading.read_data import PICKLED_FEATURES_PATH
+PICKLED_FEATURES_PATH = "./data/pickled_features/"
 
 
 class Model:
@@ -26,6 +26,7 @@ class Model:
         self.id = index
         self.features = features
         self.test = test
+        self.classifier = classifier
         self.featureMatrix = self.constructFeaturesMatrix()
         model = self.trainOnData()
         results = self.testModel()
