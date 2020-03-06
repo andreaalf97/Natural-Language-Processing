@@ -16,7 +16,7 @@ class Model:
     featureMatrix = []
     classifier = ""
     test = ""
-    results = ""
+    results = 0
 
     # Features is an array of features to use.
     # Classifier is the classifier to use. E.g., SVM
@@ -30,7 +30,7 @@ class Model:
         self.trainingSettings = settings
         self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
-        Model.results = self.trainOnData()
+        self.results = self.trainOnData()
 
     # Used to retrieve features from the appropriate pickle file and construct a matrix
     def constructFeaturesMatrix(self):
