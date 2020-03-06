@@ -135,7 +135,6 @@ def word2vec_stats():
                 2) Observing : {po}
                 3) Against : {pa}""")
 
-
     # Calculate p-values
     _, p_fa = mannwhitneyu(f, a)
     _, p_fo = mannwhitneyu(f, o)
@@ -149,6 +148,7 @@ def word2vec_stats():
 
 def root_dist_stats():
     d = read_clean_dataset()
+
     km = read_pickle_file(_feature_file_map['root_dist'])
     # Divide into the several datasets
 
