@@ -34,7 +34,7 @@ svmModel = Model(
     "train_and_test",
     features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO", "word2vec"],
     classifier="SVM",
-    settings=trainingSettingsNaiveBayes
+    settings=trainingSettingsSVM
 )
 
 print("Accuracy: ", logisticRegressionModel.results)
