@@ -8,7 +8,16 @@ trainingSettingsLogisticRegression = {
     "cross_val_folds": 10
 }
 
-model = Model("train_and_test", features=["bow", "kuhn_munkres"], classifier="Logistic Regression", settings=trainingSettingsLogisticRegression)
+trainingSettingsNaiveBayes = {
+    "cross_val_folds": 10
+}
+
+model = Model(
+    "train_and_test",
+    features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO", "word2vec"],
+    classifier="Naive Bayes",
+    settings=trainingSettingsNaiveBayes
+)
 
 
 print("Accuracy: ", model.results)

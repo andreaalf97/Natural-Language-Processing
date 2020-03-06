@@ -43,6 +43,9 @@ class Model:
         for feature_name in self.features:  # TODO load from a file, not Model.features
             df = read_pickle_file(feature_name)  # transforms the pickle file in a pandas DataFrame
 
+            if(feature_name == 'word2vec'):
+                df = df['avg_similarity']
+
             finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
 
         return finalDF
@@ -61,7 +64,12 @@ class Model:
 
     # Implementation of Naive Bayes
     def naiveBayes(self):
-        return None
+
+        nbModel = GaussianNB()
+
+        accuracies = cross_validate(nbModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+
+        return np.mean(accuracies)
 
     # Implementation of svm
     def SVM(self):
