@@ -56,6 +56,7 @@ def claim_to_headline_sim(d: pd.DataFrame, nlp) -> pd.DataFrame:
     prod_similarities = []
     i = 0
     for claim, headline in zip(d.claimHeadline, d.articleHeadline):
+
         avg_sim, prod_sim = compute_similarity(claim, headline, nlp)
         avg_similarities.append(avg_sim)
         prod_similarities.append(prod_sim)

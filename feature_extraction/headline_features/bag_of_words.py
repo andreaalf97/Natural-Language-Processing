@@ -13,7 +13,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline
 
 from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH
-from data_reading.preprocess_data import apply_lower_case, apply_lemmatization
+from data_reading.preprocess_data import apply_lower_case, apply_lemmatization, remove_non_alphanumeric
 
 from functools import lru_cache
 from collections import Counter
@@ -21,63 +21,7 @@ from collections import Counter
 from typing import List
 
 
-@lru_cache(maxsize=50)
-def bow(headline: str, wnl: WordNetLemmatizer) -> Counter:
-    """Returns the frequency counter"""
-    tokens = word_tokenize(headline.lower())
-    # Remove stops and symbols
-    tokens = [t for t in tokens if t.isalpha()]
-    # Lemmatize the tokens
-    tokens = [wnl.lemmatize(t) for t in tokens]
-    counts = Counter(tokens)
-    return counts
-
-
-def create_corpus(df: pd.DataFrame) -> Counter:
-    """Creates the corpus of all the words while summing the counters"""
-    c = Counter()
-    wnl = WordNetLemmatizer()
-    i = 0
-    for headline in df.articleHeadline:
-        _c = bow(headline, wnl)
-        c += _c
-        i += 1
-        if i % 500 == 0:
-            print(c)
-    return c
-
-
-def vectorize(tokens, indexes: dict) -> np.array:
-    """Convert the tokens to frequency vectors"""
-    vec = np.zeros(len(indexes))
-    for t in tokens:
-        vec[indexes[t]] += 1
-    return vec
-
-
-def create_vectors(df: pd.DataFrame, indexes: dict) -> pd.DataFrame:
-    """Create a dataframe with the BoW representations of the headers"""
-    features = pd.DataFrame(columns=range(len(indexes)))
-    wnl = WordNetLemmatizer()
-    i = 0
-    # put some elements to 1
-    for headline, stance in zip(df.articleHeadline, df.articleHeadlineStance):
-        if i % 100 == 0:
-            print(i)
-        # headline = row.articleHeadline
-        tokens = word_tokenize(headline.lower())
-        # Remove stops and symbols
-        tokens = [t for t in tokens if t.isalpha()]
-        # Lemmatize
-        tokens = [wnl.lemmatize(t) for t in tokens]
-        # Initialize vectors
-        vec = vectorize(tokens, indexes)
-        features.loc[i] = vec.tolist()
-        i += 1
-    return features
-
-
-def create_bow(headlines: List, max_ngram_size=2, number_of_features=500, remove_stopwords=False,
+def create_bow(headlines: List, max_ngram_size=2, number_of_features=1000, remove_stopwords=True,
                apply_tfidf=True) -> (list, sparse.csr_matrix):
     """Creates the bag of words representation using the specialized sklearn functionality
 
@@ -100,20 +44,22 @@ def create_bow(headlines: List, max_ngram_size=2, number_of_features=500, remove
 
 # Lemmatize the dataset for better representation
 dataset = read_clean_dataset()  # Read the dataset
+dataset = remove_non_alphanumeric(dataset)
 dataset = apply_lower_case(dataset)
 dataset = apply_lemmatization(dataset)
 
-features, b = create_bow(dataset.articleHeadline.values)
+# get features without tfidf
+features, b = create_bow(dataset.articleHeadline.values, apply_tfidf=False)
 
 # create a dataset
 d = pd.DataFrame(b.toarray())
 d.columns = features
+d.to_pickle(PICKLED_FEATURES_PATH + "bow.pkl")  # pickle the dataframe to the specified folder
 
-# This is the old code to make use of the old bow representation with no optimizations or tf-idf
-# counts = create_corpus(dataset)  # Number of occurrences of each word in the corpus
-# assignments = dict(zip(counts.keys(), range(len(counts))))  # Index of each of the words in the vector
-# print(counts)
-# d = create_vectors(dataset, assignments)  # dataframe with all the vectors
-#
+# get features with tfidf
+features, b = create_bow(dataset.articleHeadline.values, apply_tfidf=True)
 
-d.to_pickle(PICKLED_FEATURES_PATH+"bow.pkl")  # pickle the dataframe to the specified folder
+# create a dataset
+df = pd.DataFrame(b.toarray())
+df.columns = features
+df.to_pickle(PICKLED_FEATURES_PATH + "tfidf.pkl")  # pickle the dataframe to the specified folder

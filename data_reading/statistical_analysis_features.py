@@ -101,7 +101,6 @@ def word2vec_stats():
                 2) Observing : {po}
                 3) Against : {pa}""")
 
-
     # Calculate p-values
     _, p_fa = mannwhitneyu(f, a)
     _, p_fo = mannwhitneyu(f, o)
@@ -116,5 +115,5 @@ def word2vec_stats():
 if __name__ == '__main__':
     d = read_clean_dataset()
     length_difference(d)
-    # q_counts()
+    q_counts()
     word2vec_stats()

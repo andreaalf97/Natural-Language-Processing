@@ -25,7 +25,7 @@ def entry_lemma(entry):
 
 
 def clean_non_alphanumeric(entry):
-    sanitize = lambda word: re.sub(r'[^0-9A-Za-z]+', ' ', word).strip()
+    sanitize = lambda word: re.sub(r"[^0-9A-Za-z,.;?:'-]+", ' ', word).strip()
     tokenized_entry = word_tokenize(entry)
     return ' '.join(list(map(lambda word: sanitize(word), tokenized_entry)))
 
