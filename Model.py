@@ -23,12 +23,12 @@ class Model:
     # classifierHyperparams are hyperparameters that are provided when a classifier needs hyperparameters
     # trainingSettings are any settings for the training such as size of batches
     # test is the type of test to use like cross validation
-    def __init__(self, index=0, features=[], classifier="", classifierHyperparams=[], trainingSettings={}, test=""):
+    def __init__(self, index=0, features=[], classifier="", settings={}, test=""):
         self.id = index
         self.features = features
         self.test = test
         self.classifier = classifier
-        self.trainingSettings = trainingSettings
+        self.trainingSettings = settings
         self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
         Model.results = self.trainOnData()
@@ -78,6 +78,6 @@ class Model:
             random_state = self.trainingSettings["random_state"]
         )
 
-        accuracies = cross_validate(lrModel, self.featureMatrix, self.labels, cv=10, verbose=1)['test_score']
+        accuracies = cross_validate(lrModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 
         return np.mean(accuracies)
