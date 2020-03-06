@@ -4,7 +4,6 @@ import pickle
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_validate
 
 from data_reading.read_data import read_pickle_file, read_clean_dataset
@@ -63,7 +62,6 @@ class Model:
 
     # Implementation of Naive Bayes
     def naiveBayes(self):
-
         nbModel = GaussianNB()
 
         accuracies = cross_validate(nbModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
@@ -72,11 +70,14 @@ class Model:
 
     # Implementation of svm
     def SVM(self):
-        return None
+        svmModel = svm.SVC(gamma='auto')
+
+        accuracies = cross_validate(svmModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+
+        return np.mean(accuracies)
 
     # Implementation of logistic regression
     def logisticRegression(self):
-
         # Initialize the model
         lrModel = LogisticRegression(
             penalty = self.trainingSettings["penalty"],
