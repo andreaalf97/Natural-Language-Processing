@@ -1,27 +1,29 @@
 import numpy as np
 import pandas as pd
 import nltk
+from nltk.stem import PorterStemmer
 from data_reading.read_data import read_ppdb_data
 from munkres import Munkres, make_cost_matrix
 
 from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH
-from data_reading.preprocess_data import apply_lower_case, apply_strip
+from data_reading.preprocess_data import apply_lower_case, apply_strip, remove_non_alphanumeric
 
 _max_ppdb_score = 10.0
 _min_ppdb_score = -_max_ppdb_score
 
 _munk = Munkres()
+_stemmer = PorterStemmer()
 
 
 def compute_paraphrase_score(s, t):
     """Return numerical estimate of whether t is a paraphrase of s, up to
     stemming of s and t."""
-    if s == t:
+    if s == t or _stemmer.stem(s) == _stemmer.stem(t):
         return _max_ppdb_score
 
     # get PPDB paraphrases of s, and find matches to t, up to stemming
     s_paraphrases = set(read_ppdb_data().get(s, []))
-    matches = set(filter(lambda x: x[0] == t, s_paraphrases))
+    matches = set(filter(lambda x: (x[0] == t) or (_stemmer.stem(x[0]) == _stemmer.stem(t)), s_paraphrases))
     if matches:
         return max(matches, key=lambda x: x[1])[1]
     return _min_ppdb_score
@@ -67,6 +69,7 @@ def apply_kuhn_munkres(df):
 dataset = read_clean_dataset()  # Read the dataset
 dataset = apply_lower_case(dataset)
 dataset = apply_strip(dataset)
+dataset = remove_non_alphanumeric(dataset)
 
 a = apply_kuhn_munkres(dataset)
 
