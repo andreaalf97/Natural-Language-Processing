@@ -5,6 +5,7 @@ from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_validate
 
 from data_reading.read_data import read_pickle_file, read_clean_dataset
 
@@ -15,23 +16,21 @@ class Model:
     featureMatrix = []
     classifier = ""
     test = ""
-    results = ""
+    results = 0
 
     # Features is an array of features to use.
     # Classifier is the classifier to use. E.g., SVM
-    # classifierHyperparams are hyperparameters that are provided when a classifier needs hyperparameters
-    # trainingSettings are any settings for the training such as size of batches
+    # settings are any settings for the training and testing such as size of batches or folds in cross validation
     # test is the type of test to use like cross validation
-    def __init__(self, index=0, features=[], classifier="", classifierHyperparams=[], trainingSettings={}, test=""):
+    def __init__(self, index=0, features=[], classifier="", settings={}, test=""):
         self.id = index
         self.features = features
         self.test = test
         self.classifier = classifier
-        self.trainingSettings = trainingSettings
+        self.trainingSettings = settings
         self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
-        model = self.trainOnData()
-        results = self.testModel()
+        self.results = self.trainOnData()
 
     # Used to retrieve features from the appropriate pickle file and construct a matrix
     def constructFeaturesMatrix(self):
@@ -42,6 +41,9 @@ class Model:
         finalDF = pd.DataFrame()
         for feature_name in self.features:  # TODO load from a file, not Model.features
             df = read_pickle_file(feature_name)  # transforms the pickle file in a pandas DataFrame
+
+            if(feature_name == 'word2vec'):
+                df = df['avg_similarity']
 
             finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
 
@@ -59,15 +61,14 @@ class Model:
             print("No Classifier Selected")
             return None
 
-    # Test the model using whatever testing method specified
-    def testModel(self):
-        if self.test is "Cross Validation":
-            return self.crossValidation()
-        return None
-
     # Implementation of Naive Bayes
     def naiveBayes(self):
-        return None
+
+        nbModel = GaussianNB()
+
+        accuracies = cross_validate(nbModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+
+        return np.mean(accuracies)
 
     # Implementation of svm
     def SVM(self):
@@ -84,12 +85,6 @@ class Model:
             random_state = self.trainingSettings["random_state"]
         )
 
-        lrModel.fit(self.featureMatrix, self.labels)
+        accuracies = cross_validate(lrModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 
-        print("Accuracy on train set: ", lrModel.score(self.featureMatrix, self.labels)*100)
-
-        return lrModel
-
-    # Implementation of Cross Validation
-    def crossValidation(self):
-        return None
+        return np.mean(accuracies)
