@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 
-PICKLED_FEATURES_PATH = "./data/pickled_features/"
+from data_reading.read_data import read_pickle_file, read_clean_dataset
 
 
 class Model:
@@ -22,11 +22,13 @@ class Model:
     # classifierHyperparams are hyperparameters that are provided when a classifier needs hyperparameters
     # trainingSettings are any settings for the training such as size of batches
     # test is the type of test to use like cross validation
-    def __init__(self, index=0, features=[], classifier="", classifierHyperparams=[], trainingSettings=[], test=""):
+    def __init__(self, index=0, features=[], classifier="", classifierHyperparams=[], trainingSettings={}, test=""):
         self.id = index
         self.features = features
         self.test = test
         self.classifier = classifier
+        self.trainingSettings = trainingSettings
+        self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
         model = self.trainOnData()
         results = self.testModel()
@@ -39,22 +41,19 @@ class Model:
 
         finalDF = pd.DataFrame()
         for feature_name in self.features:  # TODO load from a file, not Model.features
-            file = open(PICKLED_FEATURES_PATH + feature_name + ".pkl", "rb")  # Open the pickle file containing
-            df = pickle.load(file)  # transforms the pickle file in a pandas DataFrame
+            df = read_pickle_file(feature_name)  # transforms the pickle file in a pandas DataFrame
 
             finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
-
-            file.close()  # Close the file
 
         return finalDF
 
     # Applies the selected classifier with any hyper parameters specified
     def trainOnData(self):
-        if self.classifier is "Naive Bayes":
+        if self.classifier == "Naive Bayes":
             return self.naiveBayes()
-        elif self.classifier is "Logistic Regression":
+        elif self.classifier == "Logistic Regression":
             return self.logisticRegression()
-        elif self.classifier is "SVM":
+        elif self.classifier == "SVM":
             return self.SVM()
         else:
             print("No Classifier Selected")
@@ -76,7 +75,20 @@ class Model:
 
     # Implementation of logistic regression
     def logisticRegression(self):
-        return None
+
+        # Initialize the model
+        lrModel = LogisticRegression(
+            penalty = self.trainingSettings["penalty"],
+            max_iter = self.trainingSettings["max_iter"],
+            n_jobs = self.trainingSettings["n_jobs"],
+            random_state = self.trainingSettings["random_state"]
+        )
+
+        lrModel.fit(self.featureMatrix, self.labels)
+
+        print("Accuracy on train set: ", lrModel.score(self.featureMatrix, self.labels)*100)
+
+        return lrModel
 
     # Implementation of Cross Validation
     def crossValidation(self):
