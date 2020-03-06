@@ -1,9 +1,13 @@
 import pandas as pd
 import numpy as np
+import pickle
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
+
+PICKLED_FEATURES_PATH = "./data/pickled_features/"
+
 
 class Model:
     id = 0
@@ -22,13 +26,27 @@ class Model:
         self.id = index
         self.features = features
         self.test = test
+        self.classifier = classifier
         self.featureMatrix = self.constructFeaturesMatrix()
         model = self.trainOnData()
         results = self.testModel()
 
     # Used to retrieve features from the appropriate pickle file and construct a matrix
     def constructFeaturesMatrix(self):
-        return None
+        # TODO I'm assuming the features will be given as the name of the file that contains them
+        # The features to use are bow, kuhn_munkres, length_diff, q_features (this is still T/F), ref_hedg_bow,
+        # root_dist (maybe change from 10000 to 0), SVO, word2vec (many NaN in prod_similarity)
+
+        finalDF = pd.DataFrame()
+        for feature_name in self.features:  # TODO load from a file, not Model.features
+            file = open(PICKLED_FEATURES_PATH + feature_name + ".pkl", "rb")  # Open the pickle file containing
+            df = pickle.load(file)  # transforms the pickle file in a pandas DataFrame
+
+            finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
+
+            file.close()  # Close the file
+
+        return finalDF
 
     # Applies the selected classifier with any hyper parameters specified
     def trainOnData(self):
