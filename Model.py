@@ -20,8 +20,7 @@ class Model:
 
     # Features is an array of features to use.
     # Classifier is the classifier to use. E.g., SVM
-    # classifierHyperparams are hyperparameters that are provided when a classifier needs hyperparameters
-    # trainingSettings are any settings for the training such as size of batches
+    # settings are any settings for the training and testing such as size of batches or folds in cross validation
     # test is the type of test to use like cross validation
     def __init__(self, index=0, features=[], classifier="", settings={}, test=""):
         self.id = index
