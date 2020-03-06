@@ -5,6 +5,7 @@ from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_validate
 
 from data_reading.read_data import read_pickle_file, read_clean_dataset
 
@@ -30,8 +31,7 @@ class Model:
         self.trainingSettings = trainingSettings
         self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
-        model = self.trainOnData()
-        results = self.testModel()
+        Model.results = self.trainOnData()
 
     # Used to retrieve features from the appropriate pickle file and construct a matrix
     def constructFeaturesMatrix(self):
@@ -59,12 +59,6 @@ class Model:
             print("No Classifier Selected")
             return None
 
-    # Test the model using whatever testing method specified
-    def testModel(self):
-        if self.test is "Cross Validation":
-            return self.crossValidation()
-        return None
-
     # Implementation of Naive Bayes
     def naiveBayes(self):
         return None
@@ -84,12 +78,6 @@ class Model:
             random_state = self.trainingSettings["random_state"]
         )
 
-        lrModel.fit(self.featureMatrix, self.labels)
+        accuracies = cross_validate(lrModel, self.featureMatrix, self.labels, cv=10, verbose=1)['test_score']
 
-        print("Accuracy on train set: ", lrModel.score(self.featureMatrix, self.labels)*100)
-
-        return lrModel
-
-    # Implementation of Cross Validation
-    def crossValidation(self):
-        return None
+        return np.mean(accuracies)

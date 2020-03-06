@@ -7,6 +7,7 @@ trainingSettingsLogisticRegression = {
     "random_state": 0  # The seed for the random number generator used to shuffle the data
 }
 
-model = Model("train_and_test", features=["bow"], classifier="Logistic Regression", trainingSettings=trainingSettingsLogisticRegression)
+model = Model("train_and_test", features=["bow", "kuhn_munkres"], classifier="Logistic Regression", trainingSettings=trainingSettingsLogisticRegression)
 
 
+print(model.results)
