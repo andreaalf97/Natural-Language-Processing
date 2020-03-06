@@ -70,7 +70,7 @@ class Model:
 
     # Implementation of svm
     def SVM(self):
-        svmModel = svm.SVC(gamma='auto')
+        svmModel = svm.SVC(gamma=self.trainingSettings["gamma"], kernel=self.trainingSettings["kernel"])
 
         accuracies = cross_validate(svmModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 

@@ -13,7 +13,9 @@ trainingSettingsNaiveBayes = {
 }
 
 trainingSettingsSVM = {
-    "cross_val_folds": 10
+    "cross_val_folds": 10,
+    "kernel": 'rbf',
+    "gamma": 'scale'
 }
 
 logisticRegressionModel = Model(
