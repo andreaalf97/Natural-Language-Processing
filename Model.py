@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-import pickle
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, cross_val_predict
+from sklearn.metrics import confusion_matrix
 
 from data_reading.read_data import read_pickle_file, read_clean_dataset
 
@@ -29,7 +29,7 @@ class Model:
         self.trainingSettings = settings
         self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
-        self.results = self.trainOnData()
+        self.results, self.confusion_matrix = self.trainOnData()
 
     # Used to retrieve features from the appropriate pickle file and construct a matrix
     def constructFeaturesMatrix(self):
@@ -47,6 +47,10 @@ class Model:
             finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
 
         return finalDF
+
+    def calc_confusion_matrix(self, model):
+        predictions = cross_val_predict(model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)
+        return confusion_matrix(self.labels, predictions, labels=["for", "observing", "against"])
 
     # Applies the selected classifier with any hyper parameters specified
     def trainOnData(self):
@@ -66,7 +70,7 @@ class Model:
 
         accuracies = cross_validate(nbModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 
-        return np.mean(accuracies)
+        return np.mean(accuracies), self.calc_confusion_matrix(nbModel)
 
     # Implementation of svm
     def SVM(self):
@@ -74,7 +78,7 @@ class Model:
 
         accuracies = cross_validate(svmModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 
-        return np.mean(accuracies)
+        return np.mean(accuracies), self.calc_confusion_matrix(svmModel)
 
     # Implementation of logistic regression
     def logisticRegression(self):
@@ -88,4 +92,4 @@ class Model:
 
         accuracies = cross_validate(lrModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 
-        return np.mean(accuracies)
+        return np.mean(accuracies), self.calc_confusion_matrix(lrModel)
