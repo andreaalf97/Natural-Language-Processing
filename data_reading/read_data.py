@@ -6,6 +6,7 @@ import os
 import pickle
 from functools import lru_cache
 
+DATA_PATH = os.path.dirname(__file__) + "/../data/"
 PICKLED_FEATURES_PATH = os.path.dirname(__file__) + "/../data/pickled_features/"
 PICKLED_PPDB = os.path.dirname(__file__) + "/../data/ppdb/"
 
