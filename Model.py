@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_validate, cross_val_predict
@@ -65,7 +66,6 @@ class Model:
 
     # Implementation of Naive Bayes
     def naiveBayes(self):
-
         nbModel = GaussianNB()
 
         accuracies = cross_validate(nbModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
@@ -74,11 +74,14 @@ class Model:
 
     # Implementation of svm
     def SVM(self):
-        return None
+        svmModel = svm.SVC(gamma=self.trainingSettings["gamma"], kernel=self.trainingSettings["kernel"])
+
+        accuracies = cross_validate(svmModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+
+        return np.mean(accuracies), self.calc_confusion_matrix(svmModel)
 
     # Implementation of logistic regression
     def logisticRegression(self):
-
         # Initialize the model
         lrModel = LogisticRegression(
             penalty = self.trainingSettings["penalty"],

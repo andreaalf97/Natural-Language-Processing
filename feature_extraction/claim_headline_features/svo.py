@@ -3,78 +3,14 @@ extract whether they're paraphrashes using PPDB"""
 
 import pandas as pd
 import spacy
-from textacy.extract import subject_verb_object_triples
-from spacy.symbols import nsubj, VERB, dobj
-from spacy import displacy
+import spacy.symbols as sym
+from nltk.corpus import stopwords
+from preprocess_data import remove_non_alphanumeric
 import numpy as np
+import re
 
-from functools import lru_cache
 
 from data_reading.read_data import read_clean_dataset, PICKLED_FEATURES_PATH, read_ppdb_data, read_pickle_file
-
-
-@lru_cache(maxsize=50)
-def find_possible_svo_triples(sentence: str, nlp) -> (set, set, set):
-    headline = nlp(sentence)
-    s = []
-    v = []
-    o = []
-    for possible_subject in headline:
-        if possible_subject.dep == nsubj and possible_subject.head.pos == VERB:
-            # For more examples see https://spacy.io/usage/linguistic-features#dependency-parse
-            # We found a verb
-            # add verb
-            v.append(possible_subject.head)
-            # # add subject
-            # s.append(possible_subject)
-            # # add object
-            # o.append([child for child in possible_subject.head.children if child.dep == dobj])
-    return s, v, o
-
-
-def extract_svo(column, nlp):
-    subjects = []
-    verbs = []
-    objects = []
-    i = 0
-    for headline in column:
-        # print(headline)
-        triplet = subject_verb_object_triples(nlp(headline))
-        try:
-            s, v, o = next(triplet)
-        except Exception:
-            s = None
-            v = None
-            o = None
-        subjects.append(s)
-        verbs.append(v)
-        objects.append(o)
-        i += 1
-        print(f'{headline} -> Verb = {v}, Subject = {s}, Objects = {o}')
-    return subjects, verbs, objects
-
-
-def create_svo_triplets():
-    print('Loading vectors')
-    # previous to this you have to download the model with
-    # python -m spacy download en_core_web_md
-    nlp = spacy.load('en_core_web_md')
-
-    print('Vectors loaded')
-    dataset = read_clean_dataset()
-    s, v, o = extract_svo(dataset.articleHeadline, nlp)
-
-    # Have to convert everything to string
-    s = [str(n) for n in s]
-    v = [str(n) for n in v]
-    o = [str(n) for n in o]
-    p = pd.DataFrame()
-
-    p['subjects'] = s
-    p['verbs'] = v
-    p['objects'] = o
-    p.to_pickle(PICKLED_FEATURES_PATH + 'claimHeadlinesSVO.pkl')
-
 
 # entailment scores for the ppdb stuff
 _entailment_map = {
@@ -87,10 +23,10 @@ _entailment_map = {
 }
 
 ppdb = read_ppdb_data()
+sw = stopwords.words('english')
 
 
-@lru_cache(maxsize=10000)
-def _calculate_entailment(h, c) -> np.array:
+def _calculate_entailment(h: list, c: list) -> np.array:
     """Calculates entailment between the given words of headline (h) and the claim (c)
 
     The funtion returns a vector with the corresponding component set to 1
@@ -100,29 +36,35 @@ def _calculate_entailment(h, c) -> np.array:
     # Construct the vector
     v = np.zeros((1, len(set(_entailment_map.values()))))
 
+    # Lowercase everything and get rid of stopwords
+    c = [w.lower() for w in c if w not in sw]
+    h = [w.lower() for w in h if w not in sw]
+
     # If one of the components of the triplet comparison was not found
-    if h == 'None' or c == 'None':
+    if len(h) == 0 or len(c) == 0:
         v[0, _entailment_map['NotFound']] = 1
         return v
 
+    # Do a for loop here with the multiple terms (nested for??)
     # If the terms are the same
-    if h.lower() == c.lower():
-        v[0, _entailment_map['Equivalence']] = 1
-        return v
-
-    # If there's other relationship we have to analyze with PPDB
-    relationships = [(x, s, e) for (x, s, e) in ppdb.get(h, [])
-                     if e in _entailment_map.keys() and x == c]
-
-    # Return the relationship with the max score
-    if relationships:
-        relationship = max(relationships, key=lambda t: t[1])[2]
-        v[0, _entailment_map[relationship]] = 1
+    for tok_h in h:
+        for tok_c in c:
+            # If they're equal
+            if tok_h == tok_c:
+                v[0, _entailment_map['Equivalence']] += 1
+                continue
+            # Other relationship
+            relationships = [(x, s, e) for (x, s, e) in ppdb.get(tok_h, [])
+                             if e in _entailment_map.keys() and x == tok_c]
+            if relationships:
+                relationship = max(relationships, key=lambda t: t[1])[2]
+                v[0, _entailment_map[relationship]] += 1
 
     return v
 
 
-def compute_similarities() -> np.array:
+def compute_similarities_ppdb() -> np.array:
+    # TODO redo this method so it takes care of the lists
     """ Returns a matrix of shape (n_headlines, 15),
     with those 15 columns being the concatenation of the entailment vectors
 
@@ -133,8 +75,8 @@ def compute_similarities() -> np.array:
     vec = ('ReverseEntailment', 'ForwardEntailment', 'Equivalence', 'OtherRelated', 'Independence', 'NotFound')
     """
 
-    headline_svo = read_pickle_file("articleHeadlinesSVO")
-    claim_svo = read_pickle_file("claimHeadlinesSVO")
+    headline_svo = read_pickle_file("articleHeadlineSVO")
+    claim_svo = read_pickle_file("claimHeadlineSVO")
 
     # create the matrix that will keep track of the entailments
     mat = np.zeros((len(headline_svo), 3 * len(set(_entailment_map.values()))))
@@ -142,8 +84,8 @@ def compute_similarities() -> np.array:
     assert mat.shape == (2595, 15)
 
     # Iterate through all the columns
-    for i, (sh, vh, oh, sc, vc, oc) in enumerate(zip(headline_svo.subjects, headline_svo.verbs, headline_svo.objects,
-                                                     claim_svo.subjects, claim_svo.verbs, claim_svo.objects)):
+    for i, (sh, vh, oh, sc, vc, oc) in enumerate(zip(headline_svo.s, headline_svo.v, headline_svo.o,
+                                                     claim_svo.s, claim_svo.v, claim_svo.o)):
         print(f'{sh, vh, oh} -- VS -- {sc, vc, oc}')
         # Vector with the entailments of a headline-claim pairing
         vec = np.zeros((1, 3 * len(set(_entailment_map.values()))))
@@ -162,10 +104,129 @@ def compute_similarities() -> np.array:
 
         mat[i, :] = vec
 
+    return headline_svo, claim_svo, mat
+
+
+def _sim(h: list, c: list, nlp):
+    """Returns the average similarity between all the terms in the arrays"""
+    # remove stopwords and lowercase everything
+    c = [w.lower() for w in c if w not in sw]
+    h = [w.lower() for w in h if w not in sw]
+    # Vector of similarities
+    if len(h) == 0 or len(c) == 0:
+        return 0
+    sims = []
+    for tok_h in h:
+        for tok_c in c:
+            a = nlp(tok_h)
+            b = nlp(tok_c)
+            sims.append(a.similarity(b))
+    # Return the average similarity between words
+    return np.mean(sims)
+
+
+def compute_similarity_word2vec(nlp):
+    """Return the w2v similarity between the vector representation of subjects, verbs and objects"""
+    headline_svo = read_pickle_file("articleHeadlineSVO")
+    claim_svo = read_pickle_file("claimHeadlineSVO")
+
+    # create the matrix that will keep track of the entailments
+    mat = np.zeros((len(headline_svo), 3))
+    print(mat.shape)
+    assert mat.shape == (2595, 3)
+
+    # Iterate through all the columns
+    for i, (sh, vh, oh, sc, vc, oc) in enumerate(zip(headline_svo.s, headline_svo.v, headline_svo.o,
+                                                     claim_svo.s, claim_svo.v, claim_svo.o)):
+        print(f'{sh, vh, oh} -- VS -- {sc, vc, oc}')
+        # Vector with the entailments of a headline-claim pairing
+        vec = np.zeros((1, 3))
+
+        # Get the similarity between the subjects
+        subject_sim = _sim(sh, sc, nlp)
+        # Get the similarity between the verbs
+        verb_sim = _sim(vh, vc, nlp)
+        # Get the similarity between the objects
+        object_sim = _sim(oh, oc, nlp)
+
+        # Add them to the matrix
+        vec[0, 0] = subject_sim
+        vec[0, 1] = verb_sim
+        vec[0, 2] = object_sim
+
+        mat[i, :] = vec
+
     return mat
 
 
-m = compute_similarities()
-d = pd.DataFrame(m)
+def _extract_triplets(sentence: str, nlp) -> (list, list, list):
+    """Extract the triplets from a single sentence"""
+    characters = [',', '.', '?', ';', ':']
+    s = []
+    v = []
+    o = []
+    # Split by commas or other signs
+    sentences = re.split(r"([,?;.:])", sentence)
+    for sent in sentences:
+        # Ignore single punctuation characters
+        if sent in characters:
+            continue
+        sent = sent.strip()
+        sent = nlp(sent)
+        # Extract the chunks of the sentence
+        chunks = sent.noun_chunks
+        for chunk in chunks:
+            if chunk.root.dep == sym.nsubj or chunk.root.dep == sym.nsubjpass:
+                s.append(chunk.root.text.strip())
+                # Append the verb
+                v.append(chunk.root.head.text.strip())
+            elif chunk.root.dep == sym.dobj or chunk.root.dep == sym.pobj:
+                o.append(chunk.root.text.strip())
 
-d.to_pickle(PICKLED_FEATURES_PATH + "SVO.pkl")
+    return s, v, o
+
+
+def svo_extraction(column, nlp):
+    subjects = []
+    verbs = []
+    objects = []
+
+    for headline in column:
+        s, v, o = _extract_triplets(headline, nlp)
+        print(f'{headline} -> S = {s}, V = {v}, O = {o}')
+        subjects.append(s)
+        objects.append(o)
+        verbs.append(v)
+
+    # Create dataframe
+    df = pd.DataFrame()
+    df = df.astype(object)
+    df['s'] = subjects
+    df['v'] = verbs
+    df['o'] = objects
+    return df
+
+
+if __name__ == '__main__':
+    print("Loading Vectors...")
+    nlp = spacy.load('en_core_web_md')
+
+    # Proper dataset
+    d = read_clean_dataset()
+    d = remove_non_alphanumeric(d)
+
+    # Extract SVO triplets
+    headlines = svo_extraction(d.articleHeadline, nlp)
+    claims = svo_extraction(d.claimHeadline, nlp)
+
+    # Save SVOs
+    headlines.to_pickle(PICKLED_FEATURES_PATH + "articleHeadlineSVO.pkl")
+    claims.to_pickle(PICKLED_FEATURES_PATH + "claimHeadlineSVO.pkl")
+
+    # Extract entailments
+    mat = compute_similarities_ppdb()
+
+    VECTOR_DIR = "../../../wse/vec"
+    print("Loading w2v vectors")
+    nlp = spacy.load(VECTOR_DIR)
+    mat = compute_similarity_word2vec(nlp)
