@@ -53,10 +53,6 @@ randomForestModel = Model(
 )
 
 print("Accuracy: ", logisticRegressionModel.results)
-print("Confusion Matrix: ", logisticRegressionModel.confusion_matrix)
 print("Accuracy: ", naiveBayesModel.results)
-print("Confusion Matrix: ", naiveBayesModel.confusion_matrix)
 print("Accuracy: ", svmModel.results)
-print("Confusion Matrix: ", svmModel.confusion_matrix)
 print("Accuracy: ", randomForestModel.results)
-print("Confusion Matrix: ", randomForestModel.confusion_matrix)
