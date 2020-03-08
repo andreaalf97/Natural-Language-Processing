@@ -47,7 +47,6 @@ class Model:
                 df = df['avg_similarity']
 
             finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
-            print(finalDF.shape)
 
         return finalDF
 
