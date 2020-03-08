@@ -18,6 +18,12 @@ trainingSettingsSVM = {
     "gamma": 'scale'
 }
 
+trainingSettingsRandomForest = {
+    "cross_val_folds": 10,
+    "max_depth": 2,
+    "random_state": 0
+}
+
 logisticRegressionModel = Model(
     "train_and_test",
     features=["bow", "kuhn_munkres"],
@@ -27,18 +33,26 @@ logisticRegressionModel = Model(
 
 naiveBayesModel = Model(
     "train_and_test",
-    features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO", "word2vec"],
+    features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO_ppdb", "word2vec"],
     classifier="Naive Bayes",
     settings=trainingSettingsNaiveBayes
 )
 
 svmModel = Model(
     "train_and_test",
-    features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO", "word2vec"],
+    features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO_ppdb", "word2vec"],
     classifier="SVM",
     settings=trainingSettingsSVM
+)
+
+randomForestModel = Model(
+    "train_and_test",
+    features=["bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO_ppdb", "word2vec"],
+    classifier="Random Forest",
+    settings=trainingSettingsRandomForest
 )
 
 print("Accuracy: ", logisticRegressionModel.results)
 print("Accuracy: ", naiveBayesModel.results)
 print("Accuracy: ", svmModel.results)
+print("Accuracy: ", randomForestModel.results)
