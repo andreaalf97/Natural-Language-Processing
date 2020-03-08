@@ -43,15 +43,17 @@ class Model:
         for feature_name in self.features:  # TODO load from a file, not Model.features
             df = read_pickle_file(feature_name)  # transforms the pickle file in a pandas DataFrame
 
-            if(feature_name == 'word2vec'):
+            if (feature_name == 'word2vec'):
                 df = df['avg_similarity']
 
             finalDF = pd.concat([finalDF, df], axis=1)  # Adds the new columns to the final dataframe
+            print(finalDF.shape)
 
         return finalDF
 
     def calc_confusion_matrix(self):
-        predictions = cross_val_predict(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)
+        predictions = cross_val_predict(self.model, self.featureMatrix, self.labels,
+                                        cv=self.trainingSettings["cross_val_folds"], verbose=1)
         self.confusion_matrix = confusion_matrix(self.labels, predictions, labels=["for", "observing", "against"])
 
     # Applies the selected classifier with any hyper parameters specified
@@ -72,31 +74,44 @@ class Model:
     def naiveBayes(self):
         self.model = GaussianNB()
 
-        accuracies = cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+        results = cross_validate(self.model, self.featureMatrix, self.labels,
+                                 cv=self.trainingSettings["cross_val_folds"], verbose=1,
+                                 scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
+                                          'roc_auc_ovr_weighted'])
+        results = {k: np.mean(v) for k, v in results.items()}
 
-        return np.mean(accuracies)
+        return results
 
     # Implementation of svm
     def SVM(self):
         self.model = svm.SVC(gamma=self.trainingSettings["gamma"], kernel=self.trainingSettings["kernel"])
 
-        accuracies = cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+        results = cross_validate(self.model, self.featureMatrix, self.labels,
+                                 cv=self.trainingSettings["cross_val_folds"], verbose=1,
+                                 scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
+                                          'roc_auc_ovr_weighted'])
+        results = {k: np.mean(v) for k, v in results.items()}
 
-        return np.mean(accuracies)
+        return results
 
     # Implementation of logistic regression
     def logisticRegression(self):
-        # Initialize the model
-        self.model = LogisticRegression(
-            penalty = self.trainingSettings["penalty"],
-            max_iter = self.trainingSettings["max_iter"],
-            n_jobs = self.trainingSettings["n_jobs"],
-            random_state = self.trainingSettings["random_state"]
+        lrModel = LogisticRegression(
+            penalty=self.trainingSettings["penalty"],
+            max_iter=self.trainingSettings["max_iter"],
+            n_jobs=self.trainingSettings["n_jobs"],
+            random_state=self.trainingSettings["random_state"],
+            solver=self.trainingSettings['solver']
         )
 
-        accuracies = cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+        results = \
+            cross_validate(lrModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"],
+                           verbose=1,
+                           scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
+                                    'roc_auc_ovr_weighted'])
 
-        return np.mean(accuracies)
+        results = {k: np.mean(v) for k, v in results.items()}
+        return results
 
     # Implementation of randomForest
     def randomForest(self):
@@ -105,8 +120,9 @@ class Model:
             max_depth=self.trainingSettings["max_depth"],
             random_state=self.trainingSettings["random_state"]
         )
-        accuracies = cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
-
-        return np.mean(accuracies)
-
-
+        results = cross_validate(self.model, self.featureMatrix, self.labels,
+                                 cv=self.trainingSettings["cross_val_folds"], verbose=1,
+                                 scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
+                                          'roc_auc_ovr_weighted'])
+        results = {k: np.mean(v) for k, v in results.items()}
+        return results

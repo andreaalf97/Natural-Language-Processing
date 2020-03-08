@@ -4,6 +4,8 @@ data/*.zip
 data/*fold*
 data/*clean-train*
 data/*~
+data/pickled_features/*HeadlineSVO*
+data/pickled_features/stanparse.pkl
 venv_ir
 .idea
 __pycache__
