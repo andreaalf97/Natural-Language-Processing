@@ -95,7 +95,7 @@ class Model:
 
     # Implementation of logistic regression
     def logisticRegression(self):
-        lrModel = LogisticRegression(
+        self.model = LogisticRegression(
             penalty=self.trainingSettings["penalty"],
             max_iter=self.trainingSettings["max_iter"],
             n_jobs=self.trainingSettings["n_jobs"],
