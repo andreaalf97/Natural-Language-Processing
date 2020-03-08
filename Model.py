@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn import svm
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_validate, cross_val_predict
 from sklearn.metrics import confusion_matrix
@@ -76,19 +76,21 @@ class Model:
         results = cross_validate(self.model, self.featureMatrix, self.labels,
                                  cv=self.trainingSettings["cross_val_folds"], verbose=1,
                                  scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
-                                          'roc_auc_ovr_weighted'])
+                                          'roc_auc_ovr_weighted'], n_jobs=-1)
         results = {k: np.mean(v) for k, v in results.items()}
 
         return results
 
     # Implementation of svm
     def SVM(self):
-        self.model = svm.SVC(gamma=self.trainingSettings["gamma"], kernel=self.trainingSettings["kernel"])
-
+        self.model = svm.SVC(C=self.trainingSettings['C'], gamma=self.trainingSettings["gamma"],
+                             kernel=self.trainingSettings["kernel"], random_state=self.trainingSettings['random_state'],
+                             degree=self.trainingSettings['degree'], probability=True)
         results = cross_validate(self.model, self.featureMatrix, self.labels,
                                  cv=self.trainingSettings["cross_val_folds"], verbose=1,
                                  scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
-                                          'roc_auc_ovr_weighted'])
+                                          'roc_auc_ovr_weighted'], n_jobs=-1)
+
         results = {k: np.mean(v) for k, v in results.items()}
 
         return results
@@ -107,8 +109,11 @@ class Model:
             cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"],
                            verbose=1,
                            scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
-                                    'roc_auc_ovr_weighted'])
+                                    'roc_auc_ovr_weighted'], n_jobs=-1, return_estimator=True)
 
+        print(results)
+        self.model = results['estimator'][0]
+        del results['estimator']
         results = {k: np.mean(v) for k, v in results.items()}
         return results
 
@@ -116,12 +121,13 @@ class Model:
     def randomForest(self):
         # Initialize the model
         self.model = RandomForestClassifier(
+            n_estimators=self.trainingSettings['n_estimators'],
             max_depth=self.trainingSettings["max_depth"],
             random_state=self.trainingSettings["random_state"]
         )
         results = cross_validate(self.model, self.featureMatrix, self.labels,
                                  cv=self.trainingSettings["cross_val_folds"], verbose=1,
                                  scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
-                                          'roc_auc_ovr_weighted'])
+                                          'roc_auc_ovr_weighted'], n_jobs=-1)
         results = {k: np.mean(v) for k, v in results.items()}
         return results

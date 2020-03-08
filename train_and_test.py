@@ -1,10 +1,11 @@
 from Model import Model
+import numpy as np
 
 
 trainingSettingsLogisticRegression = {
     "penalty": "l1",  # can be 'l1', 'l2', 'elasticnet', 'none'
     "solver": 'liblinear',
-    "max_iter": 1000,  # 100 is the default value
+    "max_iter": 150,  # 100 is the default value
     "n_jobs": -1,  # The number of cores to use, -1 means all
     "random_state": 0,  # The seed for the random number generator used to shuffle the data
     "cross_val_folds": 10
@@ -17,17 +18,22 @@ trainingSettingsNaiveBayes = {
 }
 
 trainingSettingsSVM = {
+    "C": 2,
+    'random_state': 0,
     "cross_val_folds": 10,
-    "kernel": 'linear',
+    "kernel": 'poly',
+    "degree": 2,
     "gamma": 'scale'
 }
 
 
 trainingSettingsRandomForest = {
     "cross_val_folds": 10,
-    "max_depth": 6,
+    "max_depth": 5,
+    "n_estimators": 25,
     "random_state": 0
 }
+
 
 
 def forwardSelection():
