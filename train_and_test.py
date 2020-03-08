@@ -20,6 +20,7 @@ trainingSettingsSVM = {
     "gamma": 'scale'
 }
 
+
 trainingSettingsRandomForest = {
     "cross_val_folds": 10,
     "max_depth": 2,
@@ -91,6 +92,7 @@ def backwardSelection():
         classifier="Naive Bayes",
         settings=trainingSettingsNaiveBayes
     ).results)
+
 
 forwardSelection()
 
