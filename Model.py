@@ -104,7 +104,7 @@ class Model:
         )
 
         results = \
-            cross_validate(lrModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"],
+            cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"],
                            verbose=1,
                            scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
                                     'roc_auc_ovr_weighted'])
