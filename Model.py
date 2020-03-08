@@ -5,8 +5,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_validate, cross_val_predict
 from sklearn.metrics import confusion_matrix
-
 from data_reading.read_data import read_pickle_file, read_clean_dataset
+from sklearn.ensemble import RandomForestClassifier
 
 
 class Model:
@@ -60,6 +60,8 @@ class Model:
             return self.logisticRegression()
         elif self.classifier == "SVM":
             return self.SVM()
+        elif self.classifier == "Random Forest":
+            return self.randomForest()
         else:
             print("No Classifier Selected")
             return None
@@ -93,3 +95,16 @@ class Model:
         accuracies = cross_validate(lrModel, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
 
         return np.mean(accuracies), self.calc_confusion_matrix(lrModel)
+
+    # Implementation of randomForest
+    def randomForest(self):
+        # Initialize the model
+        randomForest = RandomForestClassifier(
+            max_depth=self.trainingSettings["max_depth"],
+            random_state=self.trainingSettings["random_state"]
+        )
+        accuracies = cross_validate(randomForest, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"], verbose=1)['test_score']
+
+        return np.mean(accuracies), self.calc_confusion_matrix(randomForest)
+
+
