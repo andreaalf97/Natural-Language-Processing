@@ -1,4 +1,4 @@
-from Model import Model
+from evaluation.model import Model
 
 
 def forwardSelection(trainingSettings):
