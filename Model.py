@@ -55,6 +55,11 @@ class Model:
                                         cv=self.trainingSettings["cross_val_folds"], verbose=1)
         self.confusion_matrix = confusion_matrix(self.labels, predictions, labels=["for", "observing", "against"])
 
+    def calcConfusionMatrixScore(self):
+        trace = np.trace(self.confusion_matrix)
+        total = np.sum(self.confusion_matrix)
+        return trace/total
+
     # Applies the selected classifier with any hyper parameters specified
     def trainOnData(self):
         if self.classifier == "Naive Bayes":
