@@ -1,6 +1,6 @@
-from Model import Model
+from evaluation.model import Model
 from data_reading.read_data import DATA_PATH
-from train_and_test import trainingSettingsLogisticRegression, trainingSettingsNaiveBayes, trainingSettingsSVM
+from evaluation.train_and_test import trainingSettingsLogisticRegression, trainingSettingsNaiveBayes, trainingSettingsSVM
 import json
 
 feature_set = {"bow", "kuhn_munkres", "length_diff", "q_features", "ref_hedg_bow", "root_dist", "SVO", "word2vec"}

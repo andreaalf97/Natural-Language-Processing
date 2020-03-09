@@ -1,6 +1,3 @@
-from Model import Model
-import numpy as np
-
 trainingSettingsLogisticRegression = {
     "penalty": "l1",  # can be 'l1', 'l2', 'elasticnet', 'none'
     "solver": 'liblinear',
@@ -54,42 +51,3 @@ nestedSVMGrid = {
     'degree': [2, 3],
     "random_state": [0],
 }
-
-svmModel = Model(
-    "train_and_test",
-    features=["root_dist", "q_features", "length_diff"],
-    classifier="SVM",
-    settings=nestedSVMSettings,
-    hyperparameters_grid=nestedSVMGrid
-
-)
-
-logisticRegressionModel = Model(
-    "train_and_test",
-    features=["root_dist", "q_features", "length_diff"],
-    classifier="Logistic Regression",
-    settings=trainingSettingsLogisticRegression
-)
-#
-naiveBayesModel = Model(
-    "train_and_test",
-    features=["root_dist", "q_features", "length_diff"],
-    classifier="Naive Bayes",
-    settings=trainingSettingsNaiveBayes
-)
-
-
-
-randomForestModel = Model(
-    "train_and_test",
-    features=["root_dist", "q_features", "length_diff"],
-    classifier="Random Forest",
-    settings=nestedRandomForestSettings,
-    hyperparameters_grid=nestedRandomForestGrid
-)
-
-print("Results Logistic Regression: ", logisticRegressionModel.results)
-print("Results Naïve Bayes: ", naiveBayesModel.results)
-print("Results SVM: ", svmModel.results)
-print("Results Random Forest: ", randomForestModel.results)
-
