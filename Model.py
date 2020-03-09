@@ -3,8 +3,8 @@ import numpy as np
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import cross_validate, cross_val_predict, GridSearchCV, cross_val_score
-from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_validate, cross_val_predict, GridSearchCV, cross_val_score, train_test_split
+from sklearn.metrics import confusion_matrix, f1_score, recall_score, precision_score, roc_auc_score
 from data_reading.read_data import read_pickle_file, read_clean_dataset
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
@@ -33,8 +33,11 @@ class Model:
         self.hyperparameters_grid = hyperparameters_grid
         self.labels = read_clean_dataset()['articleHeadlineStance']
         self.featureMatrix = self.constructFeaturesMatrix()
+        # Compute train and test data
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.featureMatrix, self.labels,
+                                                                                test_size=0.2, random_state=0,
+                                                                                stratify=self.labels)
         self.results = self.trainOnData()
-
 
     # Used to retrieve features from the appropriate pickle file and construct a matrix
     def constructFeaturesMatrix(self):
@@ -61,7 +64,7 @@ class Model:
     def calcConfusionMatrixScore(self):
         trace = np.trace(self.confusion_matrix)
         total = np.sum(self.confusion_matrix)
-        return trace/total
+        return trace / total
 
     # Applies the selected classifier with any hyper parameters specified
     def trainOnData(self):
@@ -85,31 +88,56 @@ class Model:
                                  cv=self.trainingSettings["cross_val_folds"], verbose=1,
                                  scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
                                           'roc_auc_ovr_weighted'], n_jobs=-1)
-        results = {k: np.mean(v) for k, v in results.items()}
-        return results
+        self.model = self.model.fit(self.X_train, self.y_train)
+        # Compute F1 score to return
+        y_pred = self.model.predict(self.X_test)
+        f_score = f1_score(self.y_test, y_pred, average='weighted')
+        recall = recall_score(self.y_test, y_pred, average='weighted')
+        precision = precision_score(self.y_test, y_pred, average='weighted')
+        #auc = roc_auc_score(self.y_test, y_pred, average='weighted', multi_class='ovr')
+        return {'f1_score': f_score,
+                'precision': precision,
+                'recall': recall,
+                'cross_val_results': {k: (np.mean(v), np.std(v)) for k, v in
+                                      results.items()}}
 
     # Implementation of svm
     def SVM(self):
         if self.hyperparameters_grid:
-            self.model = svm.SVC()
+            self.model = svm.SVC(probability=True)
 
             # To be used within GridSearch
-            inner_cv = StratifiedKFold(n_splits=self.trainingSettings["inner_cross_val_folds"], shuffle=True)
+            inner_cv = StratifiedKFold(n_splits=self.trainingSettings["inner_cross_val_folds"], shuffle=True,
+                                       random_state=0)
 
             # To be used in outer CV
-            outer_cv = StratifiedKFold(n_splits=self.trainingSettings["outer_cross_val_folds"], shuffle=True)
+            outer_cv = StratifiedKFold(n_splits=self.trainingSettings["outer_cross_val_folds"], shuffle=True,
+                                       random_state=0)
 
-            clf = GridSearchCV(estimator=self.model, param_grid=self.hyperparameters_grid, cv=inner_cv)
+            clf = GridSearchCV(estimator=self.model, param_grid=self.hyperparameters_grid, cv=inner_cv, verbose=1, n_jobs=-1, scoring='f1_weighted')
 
-            clf.fit(self.featureMatrix, self.labels)
+            clf.fit(self.X_train, self.y_train)
             print(clf.best_estimator_)
+            self.model = clf.best_estimator_
 
-            nested_score = cross_validate(clf, X=self.featureMatrix, y=self.labels, cv=outer_cv, scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted'])
-            return {k: v.mean() for k, v in nested_score.items()}
+            nested_score = cross_validate(clf.best_estimator_, X=self.X_train, y=self.y_train, cv=outer_cv,
+                                          scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted', 'roc_auc_ovr_weighted'])
+            # Compute F1 score to return
+            y_pred = self.model.predict(self.X_test)
+            f_score = f1_score(self.y_test, y_pred, average='weighted')
+            recall = recall_score(self.y_test, y_pred, average='weighted')
+            precision = precision_score(self.y_test, y_pred, average='weighted')
+            # auc = roc_auc_score(self.y_test, y_pred, average='weighted', multi_class='ovr')
+            return {'f1_score': f_score,
+                    'precision': precision,
+                    'recall': recall,
+                    'cross_val_results': {k: (np.mean(v), np.std(v)) for k, v in
+                                          nested_score.items()}}
 
         else:
             self.model = svm.SVC(C=self.trainingSettings['C'], gamma=self.trainingSettings["gamma"],
-                                 kernel=self.trainingSettings["kernel"], random_state=self.trainingSettings['random_state'],
+                                 kernel=self.trainingSettings["kernel"],
+                                 random_state=self.trainingSettings['random_state'],
                                  degree=self.trainingSettings['degree'], probability=True)
             results = cross_validate(self.model, self.featureMatrix, self.labels,
                                      cv=self.trainingSettings["cross_val_folds"], verbose=1,
@@ -130,16 +158,25 @@ class Model:
         )
 
         results = \
-            cross_validate(self.model, self.featureMatrix, self.labels, cv=self.trainingSettings["cross_val_folds"],
+            cross_validate(self.model, self.X_train, self.y_train, cv=self.trainingSettings["cross_val_folds"],
                            verbose=1,
                            scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
-                                    'roc_auc_ovr_weighted'], n_jobs=-1, return_estimator=True)
+                                    'roc_auc_ovr_weighted'], n_jobs=-1)
 
         print(results)
-        self.model = results['estimator'][0]
-        del results['estimator']
-        results = {k: np.mean(v) for k, v in results.items()}
-        return results
+        self.model = self.model.fit(self.X_train, self.y_train)
+
+        # Compute F1 score to return
+        y_pred = self.model.predict(self.X_test)
+        f_score = f1_score(self.y_test, y_pred, average='weighted')
+        recall = recall_score(self.y_test, y_pred, average='weighted')
+        precision = precision_score(self.y_test, y_pred, average='weighted')
+        #auc = roc_auc_score(self.y_test, y_pred, average='weighted', multi_class='ovr')
+        return {'f1_score': f_score,
+                'precision': precision,
+                'recall': recall,
+                'cross_val_results': {k: (np.mean(v), np.std(v)) for k, v in
+                                      results.items()}}
 
     # Implementation of randomForest
     def randomForest(self):
@@ -147,18 +184,35 @@ class Model:
             self.model = RandomForestClassifier()
 
             # To be used within GridSearch
-            inner_cv = StratifiedKFold(n_splits=self.trainingSettings["inner_cross_val_folds"], shuffle=True)
+            inner_cv = StratifiedKFold(n_splits=self.trainingSettings["inner_cross_val_folds"], shuffle=True,
+                                       random_state=0)
 
             # To be used in outer CV
-            outer_cv = StratifiedKFold(n_splits=self.trainingSettings["outer_cross_val_folds"], shuffle=True)
+            outer_cv = StratifiedKFold(n_splits=self.trainingSettings["outer_cross_val_folds"], shuffle=True,
+                                       random_state=0)
 
-            clf = GridSearchCV(estimator=self.model, param_grid=self.hyperparameters_grid, cv=inner_cv)
+            clf = GridSearchCV(estimator=self.model, param_grid=self.hyperparameters_grid, cv=inner_cv, n_jobs=-1,
+                               verbose=1, scoring='f1_weighted')
 
-            clf.fit(self.featureMatrix, self.labels)
+            clf.fit(self.X_train, self.y_train)
             print(clf.best_estimator_)
+            self.model = clf.best_estimator_
 
-            nested_score = cross_validate(clf, X=self.featureMatrix, y=self.labels, cv=outer_cv, scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted'])
-            return {k: v.mean() for k, v in nested_score.items()}
+            nested_score = cross_validate(clf.best_estimator_, X=self.featureMatrix, y=self.labels, cv=outer_cv,
+                                          scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
+                                                   'roc_auc_ovr_weighted'], n_jobs=-1, verbose=1)
+            # Compute F1 score to return
+            # TODO calculate more than f_score, precision, recall and auc
+            y_pred = self.model.predict(self.X_test)
+            f_score = f1_score(self.y_test, y_pred, average='weighted')
+            recall = recall_score(self.y_test, y_pred, average='weighted')
+            precision = precision_score(self.y_test, y_pred, average='weighted')
+           # auc = roc_auc_score(self.y_test, y_pred, average='weighted', multi_class='ovr')
+            return {'f1_score': f_score,
+                    'precision': precision,
+                    'recall': recall,
+                    'cross_val_results': {k: (np.mean(v), np.std(v)) for k, v in
+                                          nested_score.items()}}
 
         else:
             # Initialize the model
@@ -171,5 +225,5 @@ class Model:
                                      cv=self.trainingSettings["cross_val_folds"], verbose=1,
                                      scoring=['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted',
                                               'roc_auc_ovr_weighted'], n_jobs=-1)
-            results = {k: np.mean(v) for k, v in results.items()}
+            results = {k: (np.mean(v), np.std(v)) for k, v in results.items()}
             return results
