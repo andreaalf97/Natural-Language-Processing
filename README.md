@@ -11,21 +11,21 @@
 
 # Directory Structure (Explanation of Folders and Files)
 1. Data
-  1. CSV Files
-    1. Contains the original emergent data from which we are working. The cleaned file was cleaned to remove any extraneous data and invalid information.
-  2. Pickled Features
-    1. Contains features that have been extracted. Can be read by using Pandas or Pickle.
-  3. PPDB (Paraphrase Database)
+    * CSV Files
+        * Contains the original emergent data from which we are working. The cleaned file was cleaned to remove any extraneous data and invalid information.
+    * Pickled Features
+        * Contains features that have been extracted. Can be read by using Pandas or Pickle.
+    * PPDB (Paraphrase Database)
 2. Data Reading
-  1. Contains files used for reading data in from the data folder.
+    * Contains files used for reading data in from the data folder.
 3. Evaluation
-  1. Contains files used for classifier training.
+    * Contains files used for classifier training.
 4. Feature Extraction
-  1. Contains files used to extract features to their respective pickle files.
+    * Contains files used to extract features to their respective pickle files.
 5. Feature Selection
-  1. Contains ablation tests, statistical tests, and forward/backward selection which are used to determine the usefulness of features.
+    * Contains ablation tests, statistical tests, and forward/backward selection which are used to determine the usefulness of features.
 6. Visualization
-  1. Contains scripts used to generate graphs and charts from extracted features.
+    * Contains scripts used to generate graphs and charts from extracted features.
 
 
 ## Useful Links
