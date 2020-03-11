@@ -13,14 +13,13 @@ trainingSettingsNaiveBayes = {
 }
 
 trainingSettingsSVM = {
-    "C": 2,
+    "C":0.01,
     'random_state': 0,
     "cross_val_folds": 10,
     "kernel": 'poly',
     "degree": 2,
     "gamma": 'scale'
 }
-
 
 trainingSettingsRandomForest = {
     "cross_val_folds": 10,
@@ -30,12 +29,12 @@ trainingSettingsRandomForest = {
 }
 
 nestedRandomForestSettings = {
-    "outer_cross_val_folds": 5,
+    "outer_cross_val_folds": 10,
     "inner_cross_val_folds": 5,
 }
 
 nestedSVMSettings = {
-    "outer_cross_val_folds": 5,
+    "outer_cross_val_folds": 10,
     "inner_cross_val_folds": 5,
 }
 
@@ -47,7 +46,7 @@ nestedRandomForestGrid = {
 
 nestedSVMGrid = {
     "kernel": ['poly'],
-    "C": [0.01, 0.1,0.5, 1, 1.5, 2],
+    "C": [0.01, 0.1, 0.5, 1, 1.5, 2],
     'degree': [2, 3],
     "random_state": [0],
 }
