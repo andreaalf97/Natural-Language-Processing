@@ -27,6 +27,7 @@ def forwardSelection(classifier, trainingSettings):
 
             best_features.remove(feature)
 
+        print('adding', feature_to_add)
         best_features.append(feature_to_add)
         all_features.remove(feature_to_add)
 
@@ -57,10 +58,11 @@ def backwardSelection(classifier, trainingSettings):
 
             testing_features.append(feature_being_removed)
 
+        print('removing', feature_to_remove)
         best_features.remove(feature_to_remove)
     print(best_features)
     print(max_f1_temp)
 
 
-forwardSelection("Naive Bayes", trainingSettingsNaiveBayes)
-backwardSelection("Naive Bayes", trainingSettingsNaiveBayes)
+#forwardSelection("Logistic Regression", trainingSettingsLogisticRegression)
+backwardSelection("Logistic Regression", trainingSettingsLogisticRegression)

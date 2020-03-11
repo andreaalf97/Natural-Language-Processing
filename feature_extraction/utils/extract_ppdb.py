@@ -8,12 +8,14 @@ except:
 import numpy as np
 
 
+# Code taken from William Ferreira's original MSc Project https://github.com/willferreira/mscproject
+# Specifically from the file
+# https://github.com/willferreira/mscproject/blob/deb92fba51e027c155899291767b55aeaeec45b6/bin/run_extract_ppdb_data.py
+
 def to_float(s):
     return np.nan if s == 'NA' else float(s)
 
-
 def process_ppdb_data():
-    #with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb-2.0-l-lexical'), 'r') as f:
     with open(os.path.join('..', '..', 'data', 'ppdb', 'ppdb-2.0-xl-all', 'ppdb-2.0-xl-all'), 'r') as f:
         ppdb = {}
         for line in f:
@@ -27,6 +29,10 @@ def process_ppdb_data():
             paraphrases = ppdb.setdefault(text_lhs, list())
             paraphrases.append((text_rhs, ppdb_score, entailment))
     return ppdb
+
+# ------------------------------------------------------
+#               End of code by willferreira
+# ------------------------------------------------------
 
 
 if __name__ == '__main__':

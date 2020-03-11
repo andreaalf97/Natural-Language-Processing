@@ -7,6 +7,7 @@ data/*~
 data/pickled_features/*HeadlineSVO*
 data/pickled_features/stanparse.pkl
 venv_ir
+bil
 .idea
 __pycache__
 stanford-parser
