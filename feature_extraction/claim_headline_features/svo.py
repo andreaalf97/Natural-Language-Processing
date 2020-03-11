@@ -64,7 +64,6 @@ def _calculate_entailment(h: list, c: list) -> np.array:
 
 
 def compute_similarities_ppdb() -> np.array:
-    # TODO redo this method so it takes care of the lists
     """ Returns a matrix of shape (n_headlines, 15),
     with those 15 columns being the concatenation of the entailment vectors
 
