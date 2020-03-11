@@ -53,7 +53,7 @@ def evaluateRandomForest(settings, grid={}):
 
 
 if __name__ == '__main__':
-    #lr = evaluateLogisticRegression(trainingSettingsLogisticRegression)
-    #nb = evaluateNaiveBayes(trainingSettingsNaiveBayes)
-    #rf = evaluateRandomForest(nestedRandomForestSettings, nestedRandomForestGrid)
+    lr = evaluateLogisticRegression(trainingSettingsLogisticRegression)
+    nb = evaluateNaiveBayes(trainingSettingsNaiveBayes)
+    rf = evaluateRandomForest(nestedRandomForestSettings, nestedRandomForestGrid)
     sv = evaluateSVM(nestedSVMSettings, nestedSVMGrid)
