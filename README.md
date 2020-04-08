@@ -2,7 +2,7 @@
 
 The goal of the project was to reproduce this [paper](https://www.aclweb.org/anthology/N16-1138/) on *stance classification*. The system has been trained to determine the article headline stance (*for*, *against* or *observing*) with respect to the claim. The team was able to reproduce the entire research and actually improve the model accuracy.
 
-A final report can be found in [this paper]().
+A final report can be found in [this paper](paper_report.pdf).
 
 * Andrea Alfieri - [@andreaalf97](http://github.com/andreaalf97)
 * Diego Albo - [@DiegoStock12](http://github.com/DiegoStock12)
